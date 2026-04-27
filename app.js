@@ -52,3 +52,52 @@ function initWeekPage() {
     `;
   }
 }
+
+// ===== SESSION MODE (BASIC) =====
+
+let sessionState = {
+  currentStep: 0,
+  steps: []
+};
+
+function startSession() {
+  sessionState.steps = [
+    { type: "info", text: "Warm-up 10 phút" },
+    { type: "drill", text: "Cross-arm rotation - Set 1: 5 reps" },
+    { type: "hit", text: "Đánh 5 bóng" },
+    { type: "drill", text: "Cross-arm rotation - Set 2: 5 reps" },
+    { type: "hit", text: "Đánh 5 bóng" }
+  ];
+
+  sessionState.currentStep = 0;
+  renderSession();
+}
+
+function renderSession() {
+  const container = document.getElementById("session-container");
+  if (!container) return;
+
+  const step = sessionState.steps[sessionState.currentStep];
+
+  if (!step) {
+    container.innerHTML = `
+      <div class="card">
+        <h3>Hoàn thành buổi tập 🎯</h3>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card">
+      <h3>Step ${sessionState.currentStep + 1}</h3>
+      <p>${step.text}</p>
+      <button onclick="nextStep()">Done</button>
+    </div>
+  `;
+}
+
+function nextStep() {
+  sessionState.currentStep++;
+  renderSession();
+}
