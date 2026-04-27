@@ -45,8 +45,10 @@ function initWeekPage() {
   if (content) {
     content.innerHTML = `
       <div class="card">
-        <p>Week content will be implemented in next step.</p>
+        <p><strong>Main cue:</strong> Hông đi trước</p>
+        <button onclick="startSession()">Bắt đầu buổi tập</button>
       </div>
+      <div id="session-container"></div>
     `;
   }
 }
