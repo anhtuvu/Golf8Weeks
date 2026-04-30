@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a7a4d">
+    <meta name="description" content="Golf Training Tracker - 14 day plan">
+    <title>Golf Training Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a7a4d 0%, #0d5a3d 100%);
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            margin-top: 1rem;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4ade80;
+            transition: width 0.3s ease;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a7a4d;
+        }
+        
+        nav {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+            position: sticky;
+            top: 60px;
+            z-index: 15;
+        }
+        
+        nav button {
+            flex: 1;
+            padding: 1rem 0.5rem;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        nav button.active {
+            color: #1a7a4d;
+            border-bottom-color: #1a7a4d;
+            background: #f9f9f9;
+        }
+        
+        .content {
+            padding: 1rem;
+        }
+        
+        .week-view {
+            display: none;
+        }
+        
+        .week-view.active {
+            display: block;
+        }
+        
+        .day-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .day-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .day-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .day-card-title {
+            font-weight: 600;
+            color: #1a7a4d;
+        }
+        
+        .day-card-status {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .day-card-phase {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            overflow-y: auto;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .modal.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 1rem;
+            border-radius: 12px;
+            max-width: 100%;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #1a7a4d 0%, #0d5a3d 100%);
+            color: white;
+            padding: 1.5rem 1rem;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .modal-body {
+            padding: 1.5rem 1rem;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .session-block {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #1a7a4d;
+        }
+        
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .block-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1a7a4d;
+            flex: 1;
+        }
+        
+        .block-badge {
+            display: inline-block;
+            background: #e0e0e0;
+            color: #333;
+            padding: 0.3rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 0.5rem;
+        }
+        
+        .block-badge.morning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .block-badge.afternoon {
+            background: #e0e7ff;
+            color: #1e1b4b;
+        }
+        
+        .drills-list {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .drills-list li {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+            list-style: none;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .drills-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #1a7a4d;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.4rem;
+        }
+        
+        input[type="number"],
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+        
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #1a7a4d;
+            box-shadow: 0 0 0 3px rgba(26, 122, 77, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+        
+        .metric-input {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .metric-input label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+        
+        .metric-input input {
+            padding: 0.6rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #f0fdf4;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border: 1px solid #d1fae5;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #16a34a;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            flex: 1;
+            font-weight: 500;
+            color: #065f46;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        
+        .block-footer {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .btn-save {
+            flex: 1;
+            padding: 0.75rem;
+            background: #1a7a4d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-save:active {
+            transform: scale(0.98);
+        }
+        
+        .modal-footer {
+            padding: 1rem;
+            background: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-close-modal {
+            flex: 1;
+            padding: 0.75rem;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .data-view {
+            display: none;
+        }
+        
+        .data-view.active {
+            display: block;
+        }
+        
+        .data-section {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .data-section h3 {
+            color: #1a7a4d;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.6rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .data-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #1a7a4d;
+        }
+        
+        .data-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .btn-primary {
+            padding: 0.75rem;
+            background: #1a7a4d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-secondary {
+            padding: 0.75rem;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-danger {
+            padding: 0.75rem;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #999;
+        }
+        
+        @media (max-width: 480px) {
+            .modal-body {
+                max-height: calc(100vh - 150px);
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⛳ Golf Trainer</h1>
+            <p>8-iron 14-day plan</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Days Completed</div>
+                <div class="stat-value" id="daysCompleted">0/14</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current Phase</div>
+                <div class="stat-value" id="targetStatus">Lag Lock</div>
+            </div>
+        </div>
+        
+        <nav>
+            <button onclick="switchTab('week1')" id="tab-week1" class="active">Week 1</button>
+            <button onclick="switchTab('week2')" id="tab-week2">Week 2</button>
+            <button onclick="switchTab('data')" id="tab-data">Analytics</button>
+            <button onclick="switchTab('export')" id="tab-export">Export</button>
+        </nav>
+        
+        <div class="content">
+            <!-- WEEK 1 -->
+            <div class="week-view active" id="week1">
+                <div id="week1-cards"></div>
+            </div>
+            
+            <!-- WEEK 2 -->
+            <div class="week-view" id="week2">
+                <div id="week2-cards"></div>
+            </div>
+            
+            <!-- DATA -->
+            <div class="data-view" id="data">
+                <div class="data-section">
+                    <h3>📊 Training Progress</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Smash</th>
+                                <th>Spin</th>
+                                <th>Launch</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- EXPORT -->
+            <div class="data-view" id="export">
+                <div class="data-section">
+                    <h3>📥 Export / Import</h3>
+                    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: #666;">
+                        Save your training data to backup or push to GitHub
+                    </p>
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="exportData()">📥 Export as JSON</button>
+                        <button class="btn-secondary" onclick="importData()">📤 Import JSON</button>
+                        <button class="btn-danger" onclick="resetAll()">⚠️ Reset All Data</button>
+                    </div>
+                </div>
+                
+                <div class="data-section">
+                    <h3>⚙️ Baseline Settings</h3>
+                    <div class="form-group">
+                        <label>Smash Factor (Baseline)</label>
+                        <input type="number" id="baselineSmash" step="0.01" value="1.37">
+                    </div>
+                    <div class="form-group">
+                        <label>Spin Rate (RPM) - Baseline</label>
+                        <input type="number" id="baselineSpin" value="5590">
+                    </div>
+                    <div class="form-group">
+                        <label>Launch Angle (°) - Baseline</label>
+                        <input type="number" id="baselineLaunch" step="0.1" value="19.1">
+                    </div>
+                    <button class="btn-primary" onclick="updateBaseline()">Save Baseline</button>
+                </div>
+                
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal" id="dayModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Day 1</h2>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-close-modal" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TRAINING_PLAN = {
+            1: {
+                week: 1,
+                dayTitle: 'Day 1-2: Lag Lock + Posture Awareness',
+                phase: 'Lag Awareness',
+                focus: 'Restore lag, fix early extension awareness',
+                blocks: [
+                    {
+                        id: 'day1-morning',
+                        name: '15min Morning (No Trackman)',
+                        type: 'morning',
+                        drills: [
+                            'Hand Drill - 5 balls, lag lock feeling, cổ tay cứng',
+                            'Slow Transition - 5 balls, count 1-2-3 (hông→vai→tay)',
+                            'Posture Feel - 5 balls, cảm giác lưng flex'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day1-afternoon',
+                        name: '2hr Afternoon (17-19h Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Set A (Lag Lock) - 30p, 3 blocks x 10 balls → Target: Smash 1.39+, Spin 5750+',
+                            'Set B (Posture Hold) - 30p, 2 blocks x 10 balls → Target: Launch 18.5°',
+                            'Set C (Integration) - 20p, 2 blocks x 10 balls → All together',
+                            'Cool Down - 10p, 5-10 balls'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            2: {
+                week: 1,
+                dayTitle: 'Day 1-2 (Repeat)',
+                phase: 'Lag Awareness',
+                focus: 'Consolidate lag lock + posture feeling',
+                blocks: [
+                    {
+                        id: 'day2-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Hand Drill - 5 balls',
+                            'Slow Transition - 5 balls, 1-2-3 count',
+                            'Posture Feel - 5 balls'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day2-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Lag Lock Block - 30p',
+                            'Posture Hold Block - 30p',
+                            'Integration Block - 20p',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            3: {
+                week: 1,
+                dayTitle: 'Day 3-4: Posture Lock + Smooth Transition',
+                phase: 'Early Extension Fix',
+                focus: 'Fix early extension, smooth hông→vai→tay sequencing',
+                blocks: [
+                    {
+                        id: 'day3-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Posture Check - 5 balls in mirror, lưng duỗi không?',
+                            'Hip-Only Transition - 5 balls, CHỈ quay hông',
+                            'Posture Hold Tempo - 5 balls, cảm giác smooth'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day3-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Set A (Posture Emphasis) - 35p, 3 blocks → Target: Launch 17.5-18°',
+                            'Set B (Tempo + Rhythm) - 35p, 3 blocks → Smooth hông→vai→tay',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            4: {
+                week: 1,
+                dayTitle: 'Day 3-4 (Repeat)',
+                phase: 'Early Extension Fix',
+                focus: 'Consolidate posture + smooth transition',
+                blocks: [
+                    {
+                        id: 'day4-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Posture Check - 5 balls',
+                            'Hip-Only Transition - 5 balls',
+                            'Posture Hold Tempo - 5 balls'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day4-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Posture Block - 35p',
+                            'Tempo Block - 35p',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            5: {
+                week: 1,
+                dayTitle: 'Day 5-6: Full Integration + Rhythm',
+                phase: 'Integration',
+                focus: 'Tag team lag + posture + tempo, apply all together',
+                blocks: [
+                    {
+                        id: 'day5-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Tempo Swing - 7p with metronome (60 BPM), 1-2 BS, 1 transition, 2-3 DS',
+                            'No-Drill Swing - 5p, apply subconsciously',
+                            'Feel Check - 3p'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day5-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Lag + Posture + Tempo Block - 40p, 3 blocks (rotate focus each)',
+                            'All Together Block - 30p, 2 blocks',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            6: {
+                week: 1,
+                dayTitle: 'Day 5-6 (Repeat)',
+                phase: 'Integration',
+                focus: 'Smooth automatic application of all elements',
+                blocks: [
+                    {
+                        id: 'day6-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Tempo Swing - 7p',
+                            'No-Drill Swing - 5p',
+                            'Feel Check - 3p'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day6-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Lag + Posture + Tempo Block - 40p',
+                            'All Together Block - 30p',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            7: {
+                week: 1,
+                dayTitle: 'Day 7: Tuần 1 Data Checkpoint',
+                phase: 'Week 1 Review',
+                focus: 'Assess progress, data validation',
+                blocks: [
+                    {
+                        id: 'day7-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Hand Drill - 5 balls, lag lock check',
+                            'Hip-Only - 5 balls, posture check',
+                            'Tempo Swing - 5 balls, rhythm check'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day7-afternoon',
+                        name: '2hr Afternoon (Trackman - Full Data)',
+                        type: 'afternoon',
+                        drills: [
+                            'Warm-up - 10p, 10 balls',
+                            'Test Block A - 15p, 15 balls (record all)',
+                            'Test Block B - 15p, 15 balls (record all)',
+                            'Multi-Club Check - 15p (7i, 8i, 9i)',
+                            'Data Review - 10p (compare vs baseline)'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            8: {
+                week: 2,
+                dayTitle: 'Day 8-9: Multi-Club Full Swing',
+                phase: 'Multi-Club Integration',
+                focus: 'Apply lag + posture + tempo across 6-9 irons',
+                blocks: [
+                    {
+                        id: 'day8-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            '5 balls 7-iron - apply lag + posture + tempo',
+                            '5 balls 8-iron - apply lag + posture + tempo',
+                            'Feel summary - 5p'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day8-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Iron Progression - 40p (6i, 7i, 8i, 9i x 10 each)',
+                            '8-Iron Focus Block A - 20p, 20 balls',
+                            '8-Iron Focus Block B - 20p, 20 balls (consistency)',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            9: {
+                week: 2,
+                dayTitle: 'Day 9 (Repeat)',
+                phase: 'Multi-Club Integration',
+                focus: 'Multi-club consistency check',
+                blocks: [
+                    {
+                        id: 'day9-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            '5 balls 7-iron',
+                            '5 balls 8-iron',
+                            'Feel summary'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day9-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Iron Progression - 40p',
+                            '8-Iron Focus - 40p',
+                            'Cool Down - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            10: {
+                week: 2,
+                dayTitle: 'Day 10-11: Rhythm + Course Simulation',
+                phase: 'Course Application',
+                focus: 'Transition to real course rhythm, subconscious application',
+                blocks: [
+                    {
+                        id: 'day10-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'No-Drill Hit - 10 balls, NO Trackman, just swing',
+                            'Quick Trackman Check - 3 balls (baseline only)'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day10-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Pre-Shot Routine - 30p, 5 each (6i, 8i, 9i) full setup/aim/alignment',
+                            '8-Iron Rhythm Block - 40p, 20 balls (one shot at a time, walk between)',
+                            'Finisher - 10p, 5 balls no data feedback'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            11: {
+                week: 2,
+                dayTitle: 'Day 11 (Repeat)',
+                phase: 'Course Application',
+                focus: 'Course rhythm consolidation',
+                blocks: [
+                    {
+                        id: 'day11-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'No-Drill Hit - 10 balls',
+                            'Quick Check - 3 balls'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day11-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Pre-Shot Routine - 30p',
+                            '8-Iron Rhythm - 40p, 20 balls',
+                            'Finisher - 10p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            12: {
+                week: 2,
+                dayTitle: 'Day 12-13: Pressure + Finalize',
+                phase: 'Pressure Simulation',
+                focus: 'Swing consistency under pressure, final validation',
+                blocks: [
+                    {
+                        id: 'day12-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Target Practice - 10p, 3 targets (120y, 130y, 140y)',
+                            'Quick Drill - 5p if needed'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day12-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Scoring Game - 30p, 20 balls (±5y = 1 point, try 20/20)',
+                            'Multi-Club Pressure - 20p (6i, 8i, PW random)',
+                            'Final Check - 20p, 15 balls (no game)'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            13: {
+                week: 2,
+                dayTitle: 'Day 13 (Repeat)',
+                phase: 'Pressure Simulation',
+                focus: 'Finalize under pressure',
+                blocks: [
+                    {
+                        id: 'day13-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            'Target Practice - 10p',
+                            'Quick Drill - 5p'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day13-afternoon',
+                        name: '2hr Afternoon (Trackman)',
+                        type: 'afternoon',
+                        drills: [
+                            'Scoring Game - 30p',
+                            'Multi-Club - 20p',
+                            'Final Check - 20p'
+                        ],
+                        hasMetrics: true,
+                        metrics: ['smash', 'spin', 'launch']
+                    }
+                ]
+            },
+            14: {
+                week: 2,
+                dayTitle: 'Day 14: FINAL DAY - Go Play!',
+                phase: 'Final Day',
+                focus: 'Confidence check then play course',
+                blocks: [
+                    {
+                        id: 'day14-morning',
+                        name: '15min Morning',
+                        type: 'morning',
+                        drills: [
+                            '10 balls 8-iron, confidence check',
+                            'If feel good → ready; if not → one drill then 5 ball confirm'
+                        ],
+                        hasMetrics: false
+                    },
+                    {
+                        id: 'day14-afternoon',
+                        name: '🏌️ PLAY COURSE or Range Simulation',
+                        type: 'afternoon',
+                        drills: [
+                            'GO PLAY 9-18 holes (real course preferred)',
+                            'OR simulate 18-hole range round',
+                            'Hit 8-iron 10+ times',
+                            'Track: Feel, distance, direction, confidence',
+                            'Leave Trackman in bag (enjoy the game!)'
+                        ],
+                        hasMetrics: false
+                    }
+                ]
+            }
+        };
+
+        let data = {
+            days: {},
+            baseline: {
+                smash: 1.37,
+                spin: 5590,
+                launch: 19.1
+            }
+        };
+
+        // Initialize
+        for (let i = 1; i <= 14; i++) {
+            data.days[i] = {
+                blocks: {}
+            };
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTrainerData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+            
+            const savedBaseline = localStorage.getItem('golfBaseline');
+            if (savedBaseline) {
+                data.baseline = JSON.parse(savedBaseline);
+            }
+            
+            // Ensure all blocks exist
+            for (let day = 1; day <= 14; day++) {
+                if (!data.days[day]) {
+                    data.days[day] = { blocks: {} };
+                }
+                const plan = TRAINING_PLAN[day];
+                if (plan) {
+                    plan.blocks.forEach(block => {
+                        if (!data.days[day].blocks[block.id]) {
+                            data.days[day].blocks[block.id] = {
+                                completed: false,
+                                notes: '',
+                                metrics: {}
+                            };
+                        }
+                    });
+                }
+            }
+            
+            renderUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('golfTrainerData', JSON.stringify(data));
+        }
+
+        function updateBaseline() {
+            data.baseline.smash = parseFloat(document.getElementById('baselineSmash').value) || 1.37;
+            data.baseline.spin = parseInt(document.getElementById('baselineSpin').value) || 5590;
+            data.baseline.launch = parseFloat(document.getElementById('baselineLaunch').value) || 19.1;
+            localStorage.setItem('golfBaseline', JSON.stringify(data.baseline));
+            alert('✅ Baseline updated!');
+        }
+
+        function renderUI() {
+            renderDayCards('week1', 1, 7);
+            renderDayCards('week2', 8, 14);
+            updateStats();
+            updateDataTable();
+            
+            document.getElementById('baselineSmash').value = data.baseline.smash;
+            document.getElementById('baselineSpin').value = data.baseline.spin;
+            document.getElementById('baselineLaunch').value = data.baseline.launch;
+        }
+
+        function renderDayCards(containerId, startDay, endDay) {
+            const container = document.getElementById(containerId + '-cards');
+            container.innerHTML = '';
+            
+            for (let day = startDay; day <= endDay; day++) {
+                const plan = TRAINING_PLAN[day];
+                const dayData = data.days[day];
+                
+                let completedCount = 0;
+                plan.blocks.forEach(block => {
+                    if (dayData.blocks[block.id] && dayData.blocks[block.id].completed) {
+                        completedCount++;
+                    }
+                });
+                
+                const isAllCompleted = completedCount === plan.blocks.length;
+                
+                const card = document.createElement('div');
+                card.className = 'day-card' + (isAllCompleted ? ' completed' : '');
+                card.onclick = () => openDayModal(day);
+                
+                card.innerHTML = `
+                    <div class="day-card-header">
+                        <div>
+                            <div class="day-card-title">Day ${day}</div>
+                            <div class="day-card-phase">${plan.phase}</div>
+                        </div>
+                        <div class="day-card-status">
+                            <span class="status-badge ${completedCount === plan.blocks.length ? 'completed' : ''}">
+                                ${completedCount}/${plan.blocks.length}
+                            </span>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0;">${plan.dayTitle}</p>
+                `;
+                
+                container.appendChild(card);
+            }
+        }
+
+        function openDayModal(day) {
+            const plan = TRAINING_PLAN[day];
+            const dayData = data.days[day];
+            
+            document.getElementById('modalTitle').textContent = `${plan.dayTitle}`;
+            
+            let html = `<p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem;"><strong>Focus:</strong> ${plan.focus}</p>`;
+            
+            plan.blocks.forEach(block => {
+                const blockData = dayData.blocks[block.id] || { completed: false, notes: '', metrics: {} };
+                
+                html += `
+                    <div class="session-block">
+                        <div class="block-header">
+                            <div class="block-title">${block.name}</div>
+                            <span class="block-badge ${block.type}">${block.type.toUpperCase()}</span>
+                        </div>
+                        
+                        <div class="drills-list">
+                            <ul>
+                                ${block.drills.map(drill => `<li>${drill}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        ${block.hasMetrics ? `
+                            <div style="background: white; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+                                <label style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem; display: block;">📊 Trackman Metrics</label>
+                                <div class="metrics-grid">
+                                    <div class="metric-input">
+                                        <label>Smash</label>
+                                        <input type="number" step="0.01" placeholder="1.42" value="${blockData.metrics.smash || ''}" onchange="updateMetric(${day}, '${block.id}', 'smash', this.value)">
+                                    </div>
+                                    <div class="metric-input">
+                                        <label>Spin (RPM)</label>
+                                        <input type="number" placeholder="6300" value="${blockData.metrics.spin || ''}" onchange="updateMetric(${day}, '${block.id}', 'spin', this.value)">
+                                    </div>
+                                    <div class="metric-input">
+                                        <label>Launch (°)</label>
+                                        <input type="number" step="0.1" placeholder="17" value="${blockData.metrics.launch || ''}" onchange="updateMetric(${day}, '${block.id}', 'launch', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="form-group">
+                            <label>📝 Notes & Observations</label>
+                            <textarea placeholder="How did it feel? Any issues? What went well?" onchange="updateNotes(${day}, '${block.id}', this.value)">${blockData.notes || ''}</textarea>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="check-${block.id}" ${blockData.completed ? 'checked' : ''} onchange="toggleBlockComplete(${day}, '${block.id}', this.checked)">
+                            <label for="check-${block.id}">✓ Completed</label>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('dayModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('dayModal').classList.remove('active');
+            saveData();
+            renderUI();
+        }
+
+        function toggleBlockComplete(day, blockId, completed) {
+            data.days[day].blocks[blockId].completed = completed;
+            saveData();
+        }
+
+        function updateNotes(day, blockId, notes) {
+            data.days[day].blocks[blockId].notes = notes;
+            saveData();
+        }
+
+        function updateMetric(day, blockId, metric, value) {
+            if (!data.days[day].blocks[blockId].metrics) {
+                data.days[day].blocks[blockId].metrics = {};
+            }
+            data.days[day].blocks[blockId].metrics[metric] = value ? parseFloat(value) : '';
+            saveData();
+        }
+
+        function updateStats() {
+            let completedBlocks = 0;
+            let totalBlocks = 0;
+            
+            for (let day = 1; day <= 14; day++) {
+                const plan = TRAINING_PLAN[day];
+                plan.blocks.forEach(block => {
+                    totalBlocks++;
+                    if (data.days[day].blocks[block.id] && data.days[day].blocks[block.id].completed) {
+                        completedBlocks++;
+                    }
+                });
+            }
+            
+            const percentage = Math.round((completedBlocks / totalBlocks) * 100);
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('daysCompleted').textContent = `${completedBlocks}/${totalBlocks}`;
+            
+            // Current phase
+            let currentPhase = 'Lag Lock';
+            for (let day = 1; day <= 14; day++) {
+                const plan = TRAINING_PLAN[day];
+                let allCompleted = true;
+                plan.blocks.forEach(block => {
+                    if (!data.days[day].blocks[block.id] || !data.days[day].blocks[block.id].completed) {
+                        allCompleted = false;
+                    }
+                });
+                if (!allCompleted) {
+                    currentPhase = plan.phase;
+                    break;
+                }
+            }
+            
+            document.getElementById('targetStatus').textContent = currentPhase;
+        }
+
+        function updateDataTable() {
+            const tbody = document.getElementById('dataTable');
+            tbody.innerHTML = '';
+            
+            for (let day = 1; day <= 14; day++) {
+                const plan = TRAINING_PLAN[day];
+                let smash = '-', spin = '-', launch = '-';
+                
+                // Get data from afternoon blocks (they have metrics)
+                plan.blocks.forEach(block => {
+                    if (block.hasMetrics && data.days[day].blocks[block.id]) {
+                        const metrics = data.days[day].blocks[block.id].metrics;
+                        if (metrics) {
+                            smash = metrics.smash || '-';
+                            spin = metrics.spin || '-';
+                            launch = metrics.launch || '-';
+                        }
+                    }
+                });
+                
+                const row = `
+                    <tr>
+                        <td><strong>Day ${day}</strong></td>
+                        <td>${smash}</td>
+                        <td>${spin}</td>
+                        <td>${launch}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Hide all week views
+            document.querySelectorAll('.week-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.data-view').forEach(el => el.classList.remove('active'));
+            
+            // Remove active from nav
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            
+            // Show selected
+            if (tabName === 'week1') {
+                document.getElementById('week1').classList.add('active');
+            } else if (tabName === 'week2') {
+                document.getElementById('week2').classList.add('active');
+            } else if (tabName === 'data') {
+                document.getElementById('data').classList.add('active');
+            } else if (tabName === 'export') {
+                document.getElementById('export').classList.add('active');
+            }
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function exportData() {
+            const exportObj = {
+                exportDate: new Date().toISOString(),
+                baseline: data.baseline,
+                training: data.days
+            };
+            
+            const jsonStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `golf-training-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    data.baseline = imported.baseline || data.baseline;
+                    data.days = imported.training || data.days;
+                    localStorage.setItem('golfTrainerData', JSON.stringify(data));
+                    localStorage.setItem('golfBaseline', JSON.stringify(data.baseline));
+                    renderUI();
+                    alert('✅ Data imported successfully!');
+                } catch (err) {
+                    alert('❌ Error: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetAll() {
+            if (confirm('⚠️ Delete ALL training data? This cannot be undone.')) {
+                localStorage.removeItem('golfTrainerData');
+                localStorage.removeItem('golfBaseline');
+                location.reload();
+            }
+        }
+
+        // Service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+            `)).catch(() => {});
+        }
+
+        // Load on startup
+        loadData();
+    </script>
+</body>
+</html>
